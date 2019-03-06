@@ -1,0 +1,149 @@
+<html>
+    
+    <head>
+<script src="https://www.gstatic.com/firebasejs/5.8.5/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyD5H78_G0GQ3nGzSp2c1erkBOso_oRRKAw",
+    authDomain: "test-a4ad0.firebaseapp.com",
+    databaseURL: "https://test-a4ad0.firebaseio.com",
+    projectId: "test-a4ad0",
+    storageBucket: "test-a4ad0.appspot.com",
+    messagingSenderId: "182081605571"
+  };
+  firebase.initializeApp(config);
+
+                
+        // Check to see if you are logged in
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user == null) {
+                alert("Not logged in.");
+                return;
+            } else {
+                userId = user.uid;
+                name = user.displayName;
+                imageUrl = user.photoURL;
+                email = user.email;
+                    
+                // write user data to users
+                writeUserData(userId, name, email, imageUrl);
+                
+                // write data to document
+                mydiv = document.getElementById("mydata");
+                mydiv.innerHTML = name
+                myphotodiv = document.getElementById("myphoto");
+                myphotodiv.innerHTML = "<img src='" + imageUrl + "'/>";
+
+                firebase.database().ref('/').once('value').then(function(snapshot) {
+                    var data = (snapshot.val());
+                    if (data == null) {
+                      console.log("No data found at /tweets");  
+                    } else {
+                      /*
+                      console.log(data); 
+                      var mylist = "<ul>";
+                      for (var u in data) {
+                         console.log(data[u]);
+                         for (var t in data[u]) {
+                            console.log(data[u][t].tweet);
+                            mylist = mylist + "<li>" + data[u][t].tweet + "</li>";
+                         } 
+                      }
+                      mylist = mylist + "</ul>";
+                        console.log(mylist);
+                      var mytdiv = document.getElementById("mytweets");
+                      mytdiv.innerHTML = mylist;
+                      */
+                      updatetweets(data);
+                    }
+                });
+            } // end user null check
+        }); // end check auth state
+        
+        // write user data
+        function writeUserData(userId, name, email, imageUrl) {
+            firebase.database().ref('users/' + userId).set({
+                username: name,
+                email: email,
+                profile_picture : imageUrl
+            });
+        }
+        
+        function updatetweets(data) {
+            console.log(data); 
+            var mylist = "<ul>";
+            for (var u in data.tweets) {
+                console.log(data[u]);
+                for (var t in data.tweets[u]) {
+                    console.log(data.tweets[u][t].tweet);
+                    mylist = mylist + "<li>" + data.tweets[u][t].tweet + " (" + data.users[u].email + ")</li>";
+                } 
+            }
+            mylist = mylist + "</ul>";
+            console.log(mylist);
+            var mytdiv = document.getElementById("mytweets");
+            mytdiv.innerHTML = mylist;
+        }
+        
+        // write tweets to firebase
+        function tweet() {
+            
+            twitdoc = document.getElementById("twit");
+            var nameValue = twitdoc.value;
+            var tweetid = firebase.database().ref('tweets/' + userId + "/").push({tweet: nameValue});
+            twitdoc.value = "";
+            console.log("tweet written")
+            
+            firebase.database().ref().once('value').then(function(snapshot) {
+                    var data = (snapshot.val());
+                    if (data == null) {
+                      console.log("No data found at /tweets");  
+                    } else {
+                      updatetweets(data);
+                    }
+                });
+            
+            // The unique key stored in tweetid is based on a timestamp, so list items will automatically be ordered chronologically. Because Firebase generates a unique key for each tweet, no write conflicts will occur if multiple users add a post at the same time. https://firebase.google.com/docs/database/admin/save-data
+            
+        }
+        
+        
+        function signin() {
+            console.log("Signing in");
+            var provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithRedirect(provider).then(function(result) {  
+            });
+        }
+        
+        function signout() {
+            console.log("Signing out");
+            firebase.auth().signOut().then(function() {
+            });
+        }
+    
+    </script>
+
+    </head><body>
+        <button onclick="signin()">Sign in</button>
+        <button onclick="signout()">Sign out</button>
+    
+        <form>
+            Tweet:<br>
+            <textarea id="twit" type="text" name="thetweet" cols="100" rows="4"></textarea>
+        </form> 
+        <button type="button" onclick="tweet()">Submit</button>
+    
+    <div id="mytweets"><ul><li>Hello (dcrawford@ucc.on.ca)</li><li>Cole should have a 90 (cole.parsons@ucc.on.ca)</li><li>TEST (jojo.ngai@ucc.on.ca)</li><li>You're a wizard Harry (ballinthefham@gmail.com)</li><li>ello (nick.cai@ucc.on.ca)</li><li>hello (mateo.gjinali@ucc.on.ca)</li><li>Jeffery
+ (sloan.sobie@ucc.on.ca)</li><li>Mordale Select &gt; Mordale Rep
+ (sloan.sobie@ucc.on.ca)</li><li>bruh sfx #2 (sloan.sobie@ucc.on.ca)</li><li>reeeeeee
+ (owen.anderson@ucc.on.ca)</li><li>N1 (owen.anderson@ucc.on.ca)</li><li>Hello (owen.anderson@ucc.on.ca)</li><li>Its arun's birthday today (dhruv.sharma@ucc.on.ca)</li><li>ben != captain (dhruv.sharma@ucc.on.ca)</li><li>bruh (ethan.patterson@ucc.on.ca)</li><li>wocao (ethan.patterson@ucc.on.ca)</li><li>Mooredale Lightning beat Varsity 1-0 (ben.capombassis@ucc.on.ca)</li><li>hi
+ (peter.copetti@ucc.on.ca)</li><li>scott is monkey (declan.oneill@ucc.on.ca)</li><li>Mooredale is going to lose in the first round (Klayman speaks the truth) (josh.dyer@ucc.on.ca)</li><li>RIP drake (arun.atchuthananthan@ucc.on.ca)</li><li>Man City &gt;&gt;&gt; Chelsea (arun.atchuthananthan@ucc.on.ca)</li><li>3-0 drake (iamdemost100@gmail.com)</li><li>I heard mooredale isn't good (hayden.klayman@ucc.on.ca)</li><li>Wagwan (hayden.klayman@ucc.on.ca)</li><li>this is a test (rohin.arya@ucc.on.ca)</li><li>qwerty
+ (artem.khachaturov@ucc.on.ca)</li><li>Hi David (mhoel@ucc.on.ca)</li><li>i'm sorry drake for getting mad (mhoel@ucc.on.ca)</li><li>jeff (david.zhou@ucc.on.ca)</li></ul></div>
+    <div id="mydata">Jojo Ngai</div>
+    <div id="myphoto"><img src="https://lh3.googleusercontent.com/-h-2aNMdhRaM/AAAAAAAAAAI/AAAAAAAAAAA/ACHi3rc0NgtoFp6F2mqeke_lkunJZunXLg/mo/photo.jpg"></div>
+    
+
+    
+
+</body></html>
